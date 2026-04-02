@@ -1,0 +1,41 @@
+graph LR
+    subgraph Cliente
+        Usuario((Usuario/Navegador))
+    end
+
+    subgraph AWS_Cloud [AWS Academy Learner Lab]
+        subgraph Capa_Acceso [Punto de Entrada]
+            AGW[Amazon API Gateway]
+        end
+
+        subgraph Capa_Computo [Orquestación Serverless]
+            subgraph ECS_Cluster [Cluster-MicroPay]
+                Fargate_U[ECS Fargate: Servicio Usuarios]
+                Fargate_P[ECS Fargate: Servicio Pagos]
+            end
+        end
+
+        subgraph Almacenamiento_Y_Logs [Recursos de Apoyo]
+            ECR[(Amazon ECR: Repositorio de Imágenes)]
+            CWL[Amazon CloudWatch: Logs]
+        end
+    end
+
+    %% Flujo de Tráfico
+    Usuario -->|Consulta /usuarios o /pagos| AGW
+    AGW -->|Redirige a IP Pública| Fargate_U
+    AGW -->|Redirige a IP Pública| Fargate_P
+
+    %% Relaciones de Infraestructura
+    ECR -.->|Pull de imágenes latest| Fargate_U
+    ECR -.->|Pull de imágenes latest| Fargate_P
+    
+    Fargate_U -->|Envía registros| CWL
+    Fargate_P -->|Envía registros| CWL
+
+    %% Estilos
+    style AGW fill:#FF9900,stroke:#232F3E,color:white
+    style Fargate_U fill:#FF9900,stroke:#232F3E,color:white
+    style Fargate_P fill:#FF9900,stroke:#232F3E,color:white
+    style ECR fill:#EC7211,stroke:#232F3E,color:white
+    style CWL fill:#C925D1,stroke:#232F3E,color:white
